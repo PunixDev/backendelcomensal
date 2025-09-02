@@ -36,7 +36,7 @@ app.post("/check-subscription", async (req, res) => {
     console.error("Error al verificar la suscripción:", error);
     res.status(500).json({
       error: "Error interno del servidor.",
-      details: error.message || error
+      details: error.message || error,
     });
   }
 });
