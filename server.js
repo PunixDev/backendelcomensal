@@ -3,9 +3,14 @@ require('dotenv').config();
 const express = require('express');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
+
+// Nuevo endpoint para hola mundo
+app.get('/hola', (req, res) => {
+  res.json({ message: 'hola mundo' });
+});
 
 // Endpoint para verificar la suscripción
 app.post('/check-subscription', async (req, res) => {
