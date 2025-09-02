@@ -9,7 +9,7 @@ app.use(express.json());
 
 // Nuevo endpoint para hola mundo
 app.get("/hola", (req, res) => {
-  res.json({ message: "ole mis huevos" });
+  res.json({ message: "ole mis huevosss" });
 });
 
 // Endpoint para verificar la suscripción
@@ -34,7 +34,10 @@ app.post("/check-subscription", async (req, res) => {
     }
   } catch (error) {
     console.error("Error al verificar la suscripción:", error);
-    res.status(500).json({ error: "Error interno del servidor." });
+    res.status(500).json({
+      error: "Error interno del servidor.",
+      details: error.message || error
+    });
   }
 });
 
