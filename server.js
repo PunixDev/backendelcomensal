@@ -1,3 +1,16 @@
+// Endpoint para crear sesión del portal de clientes de Stripe
+app.post("/create-customer-portal-session", async (req, res) => {
+  const { customerId } = req.body; // El ID de cliente de Stripe
+  try {
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: "https://elrestaurante.store/admin", // URL a la que volver tras gestionar
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // server.js
 require("dotenv").config();
 const express = require("express");
