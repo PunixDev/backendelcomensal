@@ -1,3 +1,24 @@
+// server.js
+require("dotenv").config();
+const express = require("express");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const app = express();
+// Permitir CORS solo desde https://elrestaurante.store
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://elrestaurante.store");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
+app.use(express.json());
+
 // Endpoint para crear sesión del portal de clientes de Stripe
 app.post("/create-customer-portal-session", async (req, res) => {
   const { customerId } = req.body; // El ID de cliente de Stripe
@@ -11,11 +32,6 @@ app.post("/create-customer-portal-session", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// server.js
-require("dotenv").config();
-const express = require("express");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const app = express();
 // Permitir CORS solo desde https://elrestaurante.store
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "https://elrestaurante.store");
