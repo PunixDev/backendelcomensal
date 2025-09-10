@@ -8,7 +8,7 @@ class GeminiTranslator {
     this.genAI = new GoogleGenerativeAI(
       "AIzaSyBQf0Fe5hbwPjEU1yCSYwpYlVSrZ3UUswo"
     );
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   }
 
   /**
