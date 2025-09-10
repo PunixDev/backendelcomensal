@@ -2,10 +2,10 @@
 require("dotenv").config();
 const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const DeepSeekTranslator = require("./deepseekService");
+const GeminiTranslator = require("./geminiService");
 
 const app = express();
-const translator = new DeepSeekTranslator();
+const translator = new GeminiTranslator();
 
 // Permitir CORS solo desde https://elrestaurante.store
 app.use((req, res, next) => {
@@ -73,7 +73,7 @@ app.post("/check-subscription", async (req, res) => {
   }
 });
 
-// NUEVOS ENDPOINTS PARA DEEPSEEK TRANSLATION
+// ENDPOINTS PARA TRADUCCIÓN (GEMINI)
 
 // Endpoint para traducir un plato
 app.post("/translate-dish", async (req, res) => {
@@ -149,12 +149,12 @@ app.post("/translate-dishes", async (req, res) => {
   }
 });
 
-// Endpoint de salud para DeepSeek
+// Endpoint de salud para el traductor
 app.get("/translate/health", (req, res) => {
   res.json({
     status: "OK",
     message: "Servicio de traducción funcionando",
-    service: "DeepSeek Translator",
+    service: "Gemini Translator",
   });
 });
 
