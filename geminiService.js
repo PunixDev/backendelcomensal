@@ -5,10 +5,8 @@ class GeminiTranslator {
   constructor() {
     // Asegúrate de tener GEMINI_API_KEY en tu archivo .env
 
-    this.genAI = new GoogleGenerativeAI(
-      "AIzaSyBQf0Fe5hbwPjEU1yCSYwpYlVSrZ3UUswo"
-    );
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   }
 
   /**
