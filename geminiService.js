@@ -10,10 +10,46 @@ class GeminiTranslator {
   }
 
   /**
-   * Traduce un plato de comida a múltiples idiomas usando Gemini
-   * @param {Object} dishData - JSON con datos del plato (nombre, descripcion, alergenos, opciones, etc.)
-   * @returns {Promise<Object>} El objeto original con las traducciones rellenadas
+   * Traduce una categoría a múltiples idiomas usando Gemini
+   * @param {Object} categoryData - JSON con nombre de la categoría
+   * @returns {Promise<Object>} El objeto con las traducciones rellenadas
    */
+  async translateCategory(categoryData) {
+    try {
+      const prompt = this.createCategoryPrompt(categoryData);
+
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const content = response.text();
+
+      return this.extractJson(content);
+    } catch (error) {
+      console.error(
+        "Error en la API de Gemini:",
+        error.response?.data || error.message
+      );
+      throw new Error("Error al traducir la categoría con Gemini");
+    }
+  }
+
+  createCategoryPrompt(categoryData) {
+    const nombre = categoryData.nombre || "";
+
+    return `
+        Traduce el nombre de la siguiente categoría a inglés, francés, alemán e italiano.
+        Devuelve ÚNICAMENTE un JSON con el objeto completo, incluyendo el campo original y las traducciones rellenadas, sin texto adicional ni markdown:
+
+        {
+            "nombre": "${nombre}",
+            "nombreEn": "traducción al inglés aquí",
+            "nombreFr": "traduction en français ici",
+            "nombreDe": "Übersetzung auf Deutsch hier",
+            "nombreIt": "traduzione in italiano qui"
+        }
+
+        Asegúrate de que las traducciones sean precisas.
+        `;
+  }
   async translateDish(dishData) {
     try {
       const prompt = this.createPrompt(dishData);

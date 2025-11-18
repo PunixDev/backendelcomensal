@@ -135,6 +135,37 @@ app.post("/translate-dish", async (req, res) => {
   }
 });
 
+// Endpoint para traducir una categoría
+app.post("/translate-category", async (req, res) => {
+  try {
+    const categoryData = req.body;
+
+    // Validación básica: debe ser un objeto con nombre
+    if (
+      !categoryData ||
+      typeof categoryData !== "object" ||
+      !categoryData.nombre
+    ) {
+      return res.status(400).json({
+        error: 'Datos inválidos. Se requiere un objeto con "nombre"',
+      });
+    }
+
+    const translation = await translator.translateCategory(categoryData);
+
+    res.json({
+      success: true,
+      data: translation,
+    });
+  } catch (error) {
+    console.error("Error en translate-category:", error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: error.message,
+    });
+  }
+});
+
 // Endpoint para traducir múltiples platos
 app.post("/translate-dishes", async (req, res) => {
   try {
@@ -192,6 +223,7 @@ app.listen(port, () => {
   console.log(`- POST /check-subscription`);
   console.log(`- POST /get-customer-by-email`);
   console.log(`- POST /translate-dish`);
+  console.log(`- POST /translate-category`);
   console.log(`- POST /translate-dishes`);
   console.log(`- GET  /translate/health`);
 });
