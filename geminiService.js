@@ -11,8 +11,8 @@ class GeminiTranslator {
 
   /**
    * Traduce un plato de comida a múltiples idiomas usando Gemini
-   * @param {Object} dishData - JSON con nombre del plato e ingredientes
-   * @returns {Promise<Object>} Traducciones en los idiomas solicitados
+   * @param {Object} dishData - JSON con datos del plato (nombre, descripcion, alergenos, opciones, etc.)
+   * @returns {Promise<Object>} El objeto original con las traducciones rellenadas
    */
   async translateDish(dishData) {
     try {
@@ -34,39 +34,38 @@ class GeminiTranslator {
 
   createPrompt(dishData) {
     const nombre = dishData.nombre || "";
-    const ingredientes = dishData.ingredientes || [];
+    const precio = dishData.precio || "";
+    const descripcion = dishData.descripcion || "";
+    const alergenos = dishData.alergenos || "";
+    const opciones = dishData.opciones || [];
 
     return `
-        Traduce el siguiente plato de comida a español, inglés, italiano, alemán y francés.
-        Devuelve ÚNICAMENTE un JSON con el siguiente formato, sin texto adicional ni markdown:
+        Traduce los siguientes campos de un plato de comida a inglés, francés, alemán e italiano.
+        Mantén el precio sin cambios.
+        Devuelve ÚNICAMENTE un JSON con el objeto completo, incluyendo los campos originales y las traducciones rellenadas, sin texto adicional ni markdown:
 
         {
-            "original": {
-                "nombre": "${nombre}",
-                "ingredientes": ${JSON.stringify(ingredientes)}
-            },
-            "traducciones": {
-                "español": {
-                    "nombre": "traducción aquí",
-                    "ingredientes": ["traducción1", "traducción2"]
-                },
-                "ingles": {
-                    "nombre": "translation here",
-                    "ingredientes": ["translation1", "translation2"]
-                },
-                "italiano": {
-                    "nombre": "traduzione qui",
-                    "ingredientes": ["traduzione1", "traduzione2"]
-                },
-                "aleman": {
-                    "nombre": "Übersetzung hier",
-                    "ingredientes": ["Übersetzung1", "Übersetzung2"]
-                },
-                "frances": {
-                    "nombre": "traduction ici",
-                    "ingredientes": ["traduction1", "traduction2"]
-                }
-            }
+            "nombre": "${nombre}",
+            "precio": ${precio},
+            "descripcion": "${descripcion}",
+            "alergenos": "${alergenos}",
+            "opciones": ${JSON.stringify(opciones)},
+            "nombreEn": "traducción al inglés aquí",
+            "descripcionEn": "traducción al inglés aquí",
+            "alergenosEn": "traducción al inglés aquí",
+            "opcionesEn": ["traducción1", "traducción2"],
+            "nombreFr": "traduction en français ici",
+            "descripcionFr": "traduction en français ici",
+            "alergenosFr": "traduction en français ici",
+            "opcionesFr": ["traduction1", "traduction2"],
+            "nombreDe": "Übersetzung auf Deutsch hier",
+            "descripcionDe": "Übersetzung auf Deutsch hier",
+            "alergenosDe": "Übersetzung auf Deutsch hier",
+            "opcionesDe": ["Übersetzung1", "Übersetzung2"],
+            "nombreIt": "traduzione in italiano qui",
+            "descripcionIt": "traduzione in italiano qui",
+            "alergenosIt": "traduzione in italiano qui",
+            "opcionesIt": ["traduzione1", "traduzione2"]
         }
 
         Asegúrate de que todas las traducciones sean precisas y apropiadas para el contexto culinario.

@@ -111,21 +111,14 @@ app.post("/get-customer-by-email", async (req, res) => {
 // Endpoint para traducir un plato
 app.post("/translate-dish", async (req, res) => {
   try {
-    const { nombre, ingredientes } = req.body;
+    const dishData = req.body;
 
-    // Validación
-    if (!nombre || !ingredientes || !Array.isArray(ingredientes)) {
+    // Validación básica: debe ser un objeto con nombre
+    if (!dishData || typeof dishData !== "object" || !dishData.nombre) {
       return res.status(400).json({
-        error: 'Datos inválidos. Se requiere "nombre" y "ingredientes" (array)',
+        error: 'Datos inválidos. Se requiere un objeto con "nombre"',
       });
     }
-
-    const dishData = {
-      nombre: nombre.trim(),
-      ingredientes: ingredientes
-        .map((item) => item.trim())
-        .filter((item) => item),
-    };
 
     const translation = await translator.translateDish(dishData);
 
