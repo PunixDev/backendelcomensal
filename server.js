@@ -73,7 +73,33 @@ app.post("/check-subscription", async (req, res) => {
   }
 });
 
-// ENDPOINTS PARA TRADUCCIÓN (GEMINI)
+// Endpoint para obtener el customer ID por email
+app.post("/get-customer-by-email", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Falta el email del cliente." });
+  }
+
+  try {
+    const customers = await stripe.customers.list({
+      email: email,
+      limit: 1,
+    });
+
+    if (customers.data.length > 0) {
+      res.json({ customerId: customers.data[0].id });
+    } else {
+      res.status(404).json({ error: "Cliente no encontrado." });
+    }
+  } catch (error) {
+    console.error("Error al obtener el cliente por email:", error);
+    res.status(500).json({
+      error: "Error interno del servidor.",
+      details: error.message || error,
+    });
+  }
+});
 
 // Endpoint para traducir un plato
 app.post("/translate-dish", async (req, res) => {
@@ -164,6 +190,7 @@ app.listen(port, () => {
   console.log(`- GET  /hola`);
   console.log(`- POST /create-customer-portal-session`);
   console.log(`- POST /check-subscription`);
+  console.log(`- POST /get-customer-by-email`);
   console.log(`- POST /translate-dish`);
   console.log(`- POST /translate-dishes`);
   console.log(`- GET  /translate/health`);
