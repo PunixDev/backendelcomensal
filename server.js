@@ -7,9 +7,16 @@ const GeminiTranslator = require("./geminiService");
 const app = express();
 const translator = new GeminiTranslator();
 
-// Permitir CORS solo desde https://elrestaurante.store
+// Permitir CORS solo desde https://elrestaurante.store y http://localhost:8100 para pruebas
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://elrestaurante.store");
+  const allowedOrigins = [
+    "https://elrestaurante.store",
+    "http://localhost:8100",
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
   res.header(
     "Access-Control-Allow-Headers",
     "Origin, X-Requested-With, Content-Type, Accept, Authorization"
