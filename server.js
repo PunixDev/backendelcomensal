@@ -60,17 +60,91 @@ app.post("/check-subscription", async (req, res) => {
   }
 
   try {
+    // No expand profundo: Stripe limita la profundidad de expansión.
+    // Recuperaremos precios y productos por separado cuando haga falta.
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
       limit: 1,
     });
 
-    if (subscriptions.data.length > 0) {
-      res.json({ isSubscribed: true });
-    } else {
-      res.json({ isSubscribed: false });
+    if (!subscriptions || subscriptions.data.length === 0) {
+      return res.json({ isSubscribed: false });
     }
+
+    const subscription = subscriptions.data[0];
+
+    const items = await Promise.all(
+      subscription.items.data.map(async (item) => {
+        // Asegurarnos de obtener el objeto price completo
+        let priceObj = item.price;
+        try {
+          if (
+            !priceObj ||
+            typeof priceObj === "string" ||
+            !priceObj.unit_amount
+          ) {
+            const priceId =
+              typeof priceObj === "string"
+                ? priceObj
+                : priceObj?.id || item.price?.id;
+            if (priceId) {
+              priceObj = await stripe.prices.retrieve(priceId);
+            }
+          }
+        } catch (err) {
+          // Si falla recuperar el precio, mantenemos lo que haya
+          priceObj = priceObj || { id: item.price };
+        }
+
+        // Ahora, obtener el producto asociado al price (objeto o id)
+        let product = priceObj?.product;
+        try {
+          if (product && typeof product === "string") {
+            product = await stripe.products.retrieve(product);
+          }
+        } catch (err) {
+          product = { id: priceObj?.product };
+        }
+
+        const planFromMetadata =
+          product?.metadata?.plan || product?.metadata?.tier;
+        let inferredPlan = planFromMetadata || null;
+        if (!inferredPlan && product?.name) {
+          const name = (product.name || "").toLowerCase();
+          if (name.includes("premium")) inferredPlan = "premium";
+          else if (name.includes("basic")) inferredPlan = "basic";
+        }
+
+        return {
+          id: item.id,
+          price: {
+            id: priceObj?.id,
+            nickname: priceObj?.nickname,
+            unit_amount: priceObj?.unit_amount,
+            currency: priceObj?.currency,
+            recurring: priceObj?.recurring,
+          },
+          product: product
+            ? {
+                id: product.id,
+                name: product.name,
+                description: product.description,
+                metadata: product.metadata,
+              }
+            : { id: priceObj?.product },
+          inferredPlan,
+        };
+      })
+    );
+
+    return res.json({
+      isSubscribed: true,
+      subscriptionId: subscription.id,
+      status: subscription.status,
+      current_period_end: subscription.current_period_end,
+      items,
+    });
   } catch (error) {
     console.error("Error al verificar la suscripción:", error);
     res.status(500).json({
