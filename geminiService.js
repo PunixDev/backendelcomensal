@@ -1,32 +1,32 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
+// geminiService.js
+const { GoogleGenAI } = require("@google/genai");
 require("dotenv").config();
 
 class GeminiTranslator {
   constructor() {
     // Asegúrate de tener GEMINI_API_KEY en tu archivo .env
-
-    this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    this.ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
   }
 
   /**
    * Traduce una categoría a múltiples idiomas usando Gemini
-   * @param {Object} categoryData - JSON con nombre de la categoría
-   * @returns {Promise<Object>} El objeto con las traducciones rellenadas
    */
   async translateCategory(categoryData) {
     try {
       const prompt = this.createCategoryPrompt(categoryData);
 
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const content = response.text();
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+      });
+      
+      const content = response.text; // En la nueva lib, text es una propiedad (getter) o función? User snippet says property.
 
       return this.extractJson(content);
     } catch (error) {
       console.error(
-        "Error en la API de Gemini:",
-        error.response?.data || error.message
+        "Error en la API de Gemini (translateCategory):",
+        error
       );
       throw new Error("Error al traducir la categoría con Gemini");
     }
@@ -50,19 +50,23 @@ class GeminiTranslator {
         Asegúrate de que las traducciones sean precisas.
         `;
   }
+
   async translateDish(dishData) {
     try {
       const prompt = this.createPrompt(dishData);
 
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      const content = response.text();
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: prompt,
+      });
+      
+      const content = response.text;
 
       return this.extractJson(content);
     } catch (error) {
       console.error(
-        "Error en la API de Gemini:",
-        error.response?.data || error.message
+        "Error en la API de Gemini (translateDish):",
+        error
       );
       throw new Error("Error al traducir el plato con Gemini");
     }
@@ -113,7 +117,8 @@ class GeminiTranslator {
       const { image, url } = input;
       let promptParts = [];
 
-      promptParts.push(`
+      promptParts.push({
+          text: `
         Analiza esta imagen de menú de restaurante y extrae todas las categorías y productos.
         Devuelve ÚNICAMENTE un JSON válido con la siguiente estructura exacta:
         {
@@ -136,7 +141,7 @@ class GeminiTranslator {
         - Si no hay descripción, string vacío.
         - Ignora elementos decorativos o que no sean comida/bebida.
         - Agrupa lógicamente por las cabeceras que veas en la imagen.
-      `);
+      `});
 
       if (image) {
         // Asegurar que solo enviamos la parte base64 sin el header
@@ -151,18 +156,21 @@ class GeminiTranslator {
           },
         });
       } else if (url) {
-        promptParts.push(`\nAquí está la URL del menú: ${url}. Intenta extraer el texto y estructura del menú de esta URL si es posible.`);
+        promptParts.push({ text: `\nAquí está la URL del menú: ${url}. Intenta extraer el texto y estructura del menú de esta URL si es posible.` });
       }
 
-      const result = await this.model.generateContent(promptParts);
-      const response = await result.response;
-      const content = response.text();
+      const response = await this.ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: promptParts,
+      });
+
+      const content = response.text;
 
       return this.extractJson(content);
     } catch (error) {
       console.error(
         "Error en la API de Gemini (parseMenu):",
-        error.response?.data || error.message
+        error
       );
       throw new Error("Error al analizar el menú con IA");
     }
@@ -171,13 +179,15 @@ class GeminiTranslator {
   extractJson(text) {
     try {
       // Busca el primer { y último } para extraer el JSON, ignorando el markdown
+      if (!text) return null;
       const jsonMatch = text.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
+         // Limpieza de caracteres problemáticos si fuera necesario
         return JSON.parse(jsonMatch[0]);
       }
       throw new Error("No se encontró un JSON válido en la respuesta.");
     } catch (error) {
-      console.error("Error al extraer JSON:", error.message);
+      console.error("Error al extraer JSON:", error.message, text);
       throw new Error("La respuesta del modelo no es un JSON válido.");
     }
   }
