@@ -16,7 +16,7 @@ class GeminiTranslator {
       const prompt = this.createCategoryPrompt(categoryData);
 
       const response = await this.ai.models.generateContent({
-        model: "gemini-1.5-flash-001",
+        model: "gemini-2.0-flash",
         contents: prompt,
       });
       
@@ -56,7 +56,7 @@ class GeminiTranslator {
       const prompt = this.createPrompt(dishData);
 
       const response = await this.ai.models.generateContent({
-        model: "gemini-1.5-flash-001",
+        model: "gemini-2.0-flash",
         contents: prompt,
       });
       
@@ -160,7 +160,7 @@ class GeminiTranslator {
       }
 
       const response = await this.ai.models.generateContent({
-        model: "gemini-1.5-flash-001",
+        model: "gemini-2.0-flash", // Reverting to 2.0-flash as requested
         contents: promptParts,
       });
 
