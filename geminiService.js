@@ -108,6 +108,66 @@ class GeminiTranslator {
         `;
   }
 
+  async parseMenu(input) {
+    try {
+      const { image, url } = input;
+      let promptParts = [];
+
+      promptParts.push(`
+        Analiza esta imagen de menú de restaurante y extrae todas las categorías y productos.
+        Devuelve ÚNICAMENTE un JSON válido con la siguiente estructura exacta:
+        {
+          "categories": [
+            {
+              "name": "Nombre Categoría",
+              "products": [
+                {
+                  "nombre": "Nombre Producto",
+                  "precio": 10.50,
+                  "descripcion": "descripción del plato",
+                  "alergenos": "lista de alergenos si se mencionan",
+                  "opciones": ["opción 1", "opción 2"]
+                }
+              ]
+            }
+          ]
+        }
+        - El precio debe ser un número. Si no hay precio, pon 0.
+        - Si no hay descripción, string vacío.
+        - Ignora elementos decorativos o que no sean comida/bebida.
+        - Agrupa lógicamente por las cabeceras que veas en la imagen.
+      `);
+
+      if (image) {
+        // Asegurar que solo enviamos la parte base64 sin el header
+        const base64Data = image.includes("base64,")
+          ? image.split("base64,")[1]
+          : image;
+
+        promptParts.push({
+          inlineData: {
+            data: base64Data,
+            mimeType: "image/jpeg",
+          },
+        });
+      } else if (url) {
+        promptParts.push(`\nAquí está la URL del menú: ${url}. Intenta extraer el texto y estructura del menú de esta URL si es posible.`);
+      }
+
+      const result = await this.model.generateContent(promptParts);
+      const response = await result.response;
+      const content = response.text();
+
+      return this.extractJson(content);
+    } catch (error) {
+      console.error(
+        "Error en la API de Gemini (parseMenu):",
+        error.response?.data || error.message
+      );
+      throw new Error("Error al analizar el menú con IA");
+    }
+  }
+
   extractJson(text) {
     try {
       // Busca el primer { y último } para extraer el JSON, ignorando el markdown

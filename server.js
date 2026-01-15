@@ -28,7 +28,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const port = process.env.PORT || 3000;
 
@@ -289,6 +290,32 @@ app.get("/translate/health", (req, res) => {
   });
 });
 
+// Endpoint para analizar una carta (imagen o URL)
+app.post("/parse-menu", async (req, res) => {
+  try {
+    const { image, url } = req.body;
+
+    if (!image && !url) {
+      return res.status(400).json({
+        error: 'Se requiere "image" (base64) o "url"',
+      });
+    }
+
+    const menuData = await translator.parseMenu({ image, url });
+
+    res.json({
+      success: true,
+      data: menuData,
+    });
+  } catch (error) {
+    console.error("Error en parse-menu:", error);
+    res.status(500).json({
+      error: "Error interno del servidor",
+      message: error.message,
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
   console.log(`Endpoints disponibles:`);
@@ -299,5 +326,6 @@ app.listen(port, () => {
   console.log(`- POST /translate-dish`);
   console.log(`- POST /translate-category`);
   console.log(`- POST /translate-dishes`);
+  console.log(`- POST /parse-menu`);
   console.log(`- GET  /translate/health`);
 });
