@@ -121,6 +121,7 @@ class GeminiTranslator {
           text: `
         Analiza esta imagen de menú de restaurante y extrae todas las categorías y productos.
         IMPORTANTE: Traduce automáticamente el contenido a Inglés (En), Francés (Fr), Alemán (De) e Italiano (It).
+        DEBES LLENAR TODOS LOS CAMPOS DE IDIOMA. NO LOS DEJES VACÍOS.
         
         Devuelve ÚNICAMENTE un JSON válido con la siguiente estructura exacta:
         {
@@ -139,25 +140,25 @@ class GeminiTranslator {
                   "alergenos": "lista de alergenos",
                   "opciones": ["opción 1", "opción 2"],
                   
-                  "nombreEn": "Product Name (English)",
-                  "descripcionEn": "description",
-                  "alergenosEn": "allergens",
-                  "opcionesEn": ["option 1"],
+                  "nombreEn": "Translate Name to English",
+                  "descripcionEn": "Translate Description to English",
+                  "alergenosEn": "Translate Allergens to English",
+                  "opcionesEn": ["Translate Options to English"],
 
-                  "nombreFr": "Nom du produit (Français)",
-                  "descripcionFr": "description",
-                  "alergenosFr": "allergènes",
-                  "opcionesFr": ["option 1"],
+                  "nombreFr": "Translate Name to French",
+                  "descripcionFr": "Translate Description to French",
+                  "alergenosFr": "Translate Allergens to French",
+                  "opcionesFr": ["Translate Options to French"],
 
-                  "nombreDe": "Produktname (Deutsch)",
-                  "descripcionDe": "Beschreibung",
-                  "alergenosDe": "Allergene",
-                  "opcionesDe": ["Option 1"],
+                  "nombreDe": "Translate Name to German",
+                  "descripcionDe": "Translate Description to German",
+                  "alergenosDe": "Translate Allergens to German",
+                  "opcionesDe": ["Translate Options to German"],
 
-                  "nombreIt": "Nome del prodotto (Italiano)",
-                  "descripcionIt": "descrizione",
-                  "alergenosIt": "allergeni",
-                  "opcionesIt": ["opzione 1"]
+                  "nombreIt": "Translate Name to Italian",
+                  "descripcionIt": "Translate Description to Italian",
+                  "alergenosIt": "Translate Allergens to Italian",
+                  "opcionesIt": ["Translate Options to Italian"]
                 }
               ]
             }
