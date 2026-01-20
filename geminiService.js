@@ -120,18 +120,44 @@ class GeminiTranslator {
       promptParts.push({
           text: `
         Analiza esta imagen de menú de restaurante y extrae todas las categorías y productos.
+        IMPORTANTE: Traduce automáticamente el contenido a Inglés (En), Francés (Fr), Alemán (De) e Italiano (It).
+        
         Devuelve ÚNICAMENTE un JSON válido con la siguiente estructura exacta:
         {
           "categories": [
             {
-              "name": "Nombre Categoría",
+              "name": "Nombre Categoría (Español)",
+              "nameEn": "Category Name (English)",
+              "nameFr": "Nom de la catégorie (Français)",
+              "nameDe": "Kategoriename (Deutsch)",
+              "nameIt": "Nome della categoria (Italiano)",
               "products": [
                 {
-                  "nombre": "Nombre Producto",
+                  "nombre": "Nombre Producto (Español)",
                   "precio": 10.50,
-                  "descripcion": "descripción del plato",
-                  "alergenos": "lista de alergenos si se mencionan",
-                  "opciones": ["opción 1", "opción 2"]
+                  "descripcion": "descripción del plato (Español)",
+                  "alergenos": "lista de alergenos",
+                  "opciones": ["opción 1", "opción 2"],
+                  
+                  "nombreEn": "Product Name (English)",
+                  "descripcionEn": "description",
+                  "alergenosEn": "allergens",
+                  "opcionesEn": ["option 1"],
+
+                  "nombreFr": "Nom du produit (Français)",
+                  "descripcionFr": "description",
+                  "alergenosFr": "allergènes",
+                  "opcionesFr": ["option 1"],
+
+                  "nombreDe": "Produktname (Deutsch)",
+                  "descripcionDe": "Beschreibung",
+                  "alergenosDe": "Allergene",
+                  "opcionesDe": ["Option 1"],
+
+                  "nombreIt": "Nome del prodotto (Italiano)",
+                  "descripcionIt": "descrizione",
+                  "alergenosIt": "allergeni",
+                  "opcionesIt": ["opzione 1"]
                 }
               ]
             }
