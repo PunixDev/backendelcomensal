@@ -183,7 +183,21 @@ class GeminiTranslator {
           },
         });
       } else if (url) {
-        promptParts.push({ text: `\nAquí está la URL del menú: ${url}. Intenta extraer el texto y estructura del menú de esta URL si es posible.` });
+        // Fetch HTML content if URL is provided
+        try {
+          const axios = require("axios");
+          const htmlResponse = await axios.get(url, {
+             headers: {
+               'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+             }
+          });
+          const htmlContent = htmlResponse.data.substring(0, 30000); // Limit context to avoid token limits if too huge
+          
+          promptParts.push({ text: `\nAquí está el contenido HTML del menú (URL: ${url}):\n${htmlContent}\n\nAnalízalo para extraer categorías y productos.` });
+        } catch (err) {
+            console.warn("Could not fetch URL content, falling back to URL only:", err.message);
+            promptParts.push({ text: `\nAquí está la URL del menú: ${url}. Intenta extraer el texto y estructura del menú de esta URL si es posible.` });
+        }
       }
 
       const response = await this.ai.models.generateContent({
