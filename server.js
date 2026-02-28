@@ -3,9 +3,11 @@ require("dotenv").config();
 const express = require("express");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const GeminiTranslator = require("./geminiService");
+const BillingService = require("./billingService");
 
 const app = express();
 const translator = new GeminiTranslator();
+const billingService = new BillingService();
 
 // Permitir CORS solo desde https://elrestaurante.store y http://localhost:8100 para pruebas
 app.use((req, res, next) => {
@@ -316,6 +318,71 @@ app.post("/parse-menu", async (req, res) => {
   }
 });
 
+// Endpoint para generar factura Verifactu/TicketBAI
+app.post("/generate-invoice", async (req, res) => {
+  try {
+    const { orderData, businessData } = req.body;
+    
+    if (!orderData) {
+      return res.status(400).json({ error: 'Faltan los datos del pedido (orderData)' });
+    }
+
+    const result = await billingService.generateInvoice(orderData, businessData || {});
+    
+    res.json(result);
+  } catch (error) {
+    console.error("Error en generate-invoice:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error interno al generar la factura",
+      message: error.message,
+    });
+  }
+});
+
+// Endpoint para crear sesión de pago Checkout (Stripe Connect)
+app.post("/create-checkout-session", async (req, res) => {
+  try {
+    const { amount, returnUrl, secretKey, mesa, barNombre } = req.body;
+
+    if (!amount || !returnUrl || !secretKey) {
+      return res.status(400).json({ error: 'Faltan parámetros obligatorios (amount, returnUrl, secretKey)' });
+    }
+
+    // Inicializamos una instancia de Stripe específica para el bar con SU clave secreta
+    const stripeClient = require('stripe')(secretKey);
+
+    // Creamos la sesión de Checkout
+    const session = await stripeClient.checkout.sessions.create({
+      payment_method_types: ['card', 'link'], // Link incluye Apple/Google Pay automáticamente
+      line_items: [
+        {
+          price_data: {
+            currency: 'eur',
+            product_data: {
+              name: `Cuenta de Mesa ${mesa || 'N/A'} - ${barNombre || 'Restaurante'}`,
+            },
+            unit_amount: Math.round(amount * 100), // Stripe usa céntimos
+          },
+          quantity: 1,
+        },
+      ],
+      mode: 'payment',
+      success_url: `${returnUrl}?success=true`,
+      cancel_url: `${returnUrl}?canceled=true`,
+    });
+
+    res.json({ url: session.url });
+  } catch (error) {
+    console.error("Error en create-checkout-session:", error);
+    res.status(500).json({
+      success: false,
+      error: "Error al crear la sesión de pago",
+      message: error.message,
+    });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Servidor escuchando en http://localhost:${port}`);
   console.log(`Endpoints disponibles:`);
@@ -328,4 +395,5 @@ app.listen(port, () => {
   console.log(`- POST /translate-dishes`);
   console.log(`- POST /parse-menu`);
   console.log(`- GET  /translate/health`);
+  console.log(`- POST /generate-invoice`);
 });
